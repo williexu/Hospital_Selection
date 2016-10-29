@@ -1,0 +1,136 @@
+%++++++++++++++++++++++++++++++++++++++++
+% * <an428@cornell.edu> 2016-10-28T17:18:57.036Z:
+%
+% ^.
+% Don't modify this section unless you know what you're doing!
+\documentclass[letterpaper,11pt]{article}
+\usepackage{tabularx} % extra features for tabular environment
+\usepackage{amsmath}  % improve math presentation
+\usepackage{graphicx} % takes care of graphic including machinery
+\usepackage[margin=0.5in,letterpaper]{geometry} % decreases margins
+\usepackage{cite} % takes care of citations
+\setlength\parindent{0pt}
+\usepackage[final]{hyperref} % adds hyper links inside the generated pdf file
+\hypersetup{
+	colorlinks=true,       % false: boxed links; true: colored links
+	linkcolor=blue,        % color of internal links
+	citecolor=blue,        % color of links to bibliography
+	filecolor=magenta,     % color of file links
+	urlcolor=blue         
+}
+%++++++++++++++++++++++++++++++++++++++++
+
+
+\begin{document}
+%titlepage
+\thispagestyle{empty}
+\begin{center}
+\begin{minipage}{0.75\linewidth}
+    \centering
+    \vspace{5cm}
+
+%Thesis title
+    {\uppercase{\Large Hospital Selection\par}}
+    \medskip
+    {\uppercase{\Large Mid-Term Report\par}}
+    \vspace{3cm}
+%Author's name
+    {\Large ORIE 4741\par}
+    {\Large Dayin Chen, Anne Ng, Willie Xu\par}
+    \vspace{3cm}
+
+%Date
+    {\Large 2016/10/28}
+\end{minipage}
+\end{center}
+\clearpage
+
+\section*{Introduction and Overview}
+
+Our team has done an initial canvas of the main data set and extracted the most relevant features for analysis. Our initial goal was to build a recommendation model for patients to help them decide which hospital to go to given their illness. In the process, we hoped to extract data insights for patients, insurance providers and hospital administrators as they make decisions regarding hospital selection or hospital policies. 
+
+\medskip
+However, we have not been able to find raw indicators of success by procedure and hospital, so we have not been able to asses which hospitals have the highest success rates for different illnesses. Therefore, we decided to analyze the question from a pricing perspective. Given that we know the associated costs and final charges to patients for each visit, we want to predict how much a hospital will charge you for a visit given your personal information and the type and severity of your illness.The purpose of this analysis is to help patients and insurance providers identify whether a hospital is overcharging. At the same time, hospitals can use this information to reflect on its pricing model. The overall goal is still the same - to help patients, insurance providers and hospitals make better choices. 
+\section*{Data Sets and Processing}
+
+
+We used three data sets: the first data set contains all patient discharges information in New York; we joined it with the second data set which contains information on number of beds available at each facility. The third data set contains information of total hospital discharges.
+
+\begin{enumerate}
+  \item Hospital Inpatient Discharges (SPARCS De-Identified): 2012
+  
+  \url{https://health.data.ny.gov/Health/Hospital-Inpatient-Discharges-SPARCS-De-Identified/u4ud-w55t}
+  
+  \item Health Facility Certification Information
+  
+  \url{https://health.data.ny.gov/Health/Health-Facility-Certification-Information/2g9y-7kqm}
+  
+  \item All Payer Hospital Inpatient Discharges by Facility (SPARCS De-Identified): Beginning 2009
+  
+  \url{https://www.health.data.ny.gov/Health/All-Payer-Hospital-Inpatient-Discharges-by-Facilit/ivw2-k53g}
+  
+\end{enumerate}
+
+
+The original data sets contain 2,544,731 rows of data points, corresponding to the same number of patient discharges. Before we conducted any analysis on the data sets, we cleaned and turned the data into usable form. We fixed or removed some corrupted or missing data points, extracted features we wanted to analyze, and converted some values by the following rules:
+
+\begin{enumerate}
+  \item The values of number of certified facilities for two hospitals are missing because they closed or merged with other hospitals. Those values are replaced by past information found on the internet or mean values. 
+  
+  \item We removed 4308 rows of data points with Abortion Record - Facility Name Redacted since the data set doesn't disclose which hospitals perform abortions. 
+  
+  \item Features transformation
+  	\begin{enumerate}
+  	\item Boolean Data- For data of this type, with only two categories, such as \textit{Emergency Department Indicator} which tells us whether the patient was admitted through the emergency room, we simply assigned values of 1/0 or 1/-1 to the categories. One feature of note is \textit{Gender}, in which we assigned 'M'/'F' values of 1/-1 and those with 'U', from which we inferred indicated transgenders or unknowns a value of 0. 
+    
+    \item Ordinal Data- For data of this type, such as with \textit{APR Risk of Mortality} and \textit{Age Group}, we assumed even spacing of the ordinal data values and thus assigned them numerical values corresponding to consecutive integers. Thus, 'Minor' might equate to 1, 'Moderate' to 2, 'Major' to 3, and so on forth. This is subject to change.
+    
+    \item Categorical Data- There are columns such as \textit{Patient Disposition} that tell us where a patient is discharged (home, inpatient rehabilitation etc). Because there was no clear cut numerical ordering of values to this type of data, we broke these categories up into multiple features. Thus, each category was extracted as its own separate new feature, giving us a number of new features equivalent to the number of categories present in the original. 
+    
+    \item Miscellaneous- Some numerical data was not fully numerical in the original data-set. For instance, some were capped at a certain amount and any data-points that were over that amount were just assigned a flag such as, '120+'. These flags were simply converted to the maximum possible number for that feature (in this case, 120).
+  	\end{enumerate}
+  
+  \item Combining Data sets
+  
+  We extracted information of facilities/hospitals from second and third data sets and joined them with each patient record in the first data set by facility name. 
+  
+\end{enumerate}
+
+
+
+\section*{Visualizations and Statistics}
+
+\includegraphics[width=\textwidth]{Sheet_3.jpg}
+\includegraphics[width=\textwidth]{Sheet_5.jpg}
+We see that the top three patient categories are related to childbirth and infant care, followed by illnesses and diseases. From the second chart, we used a median statistic to compare patient charges and costs relative to length of stay. We see that charges are not immediately correlated with costs for different hospitals. It may be due to how some hospitals specialize in certain areas, so they may charge more for the same procedure. 
+
+\section*{How to avoid over-fitting or under-fitting}
+
+To avoid over-fitting, we can use regularization method to shrink our hypothesis space. To check whether under-fitting occurs, we can use the bias-variance approach. 
+\medskip
+In general, we can use cross validation to check the strength of our model. We split our data set into three parts - 60\% training set, 20\% validation set and 20\% test set.
+
+\section*{Preliminary Analysis}
+
+We tried a simple linear regression model on our training set. The feature space $X$ contains 20 numerical values and the dependent variable $y$ is the total charges for each patient. $w$ is found by w = $X$\textbackslash $y$ on Julia.
+
+\begin{tabular}{l*{6}{c}r}
+
+$X$ & $w$ & $X$ & $w$ & $X$ & $w$ \\
+\hline
+Zip Code & 422.139 & Gender & -185.983 & Length of Stay & 700.069\\ 
+Elective Ad & 3579.02 & Emergency & 27089.4 & Newborn &31329.3  \\
+Trauma Ad & 29005.1 & Urgent Ad & 49799.5 & Self-Care Dispo & 26844.8 \\
+Home Service Dispo & -650.054 & Nursing Home Dispo & -313.915 & Short-term Hospital Dispo & -3362.42\\
+Expired? & 3303.37 & APR Severity Code & 6761.31 & APR Risk of Mortality & 1966.57 \\ 
+APR Medical/Surgical & 4444.26 & Emergency & 11921.1 & Total Beds & -2046.2 \\ 
+Total Services & 18.6201 \\
+
+
+\end{tabular}
+
+
+\section*{Next Steps}
+From the analysis, we see that pricing models might be vastly different for different admittance reasons, so we will try fitting separate models for each of the top ten admittance reasons. Moreover, there might be some correlations between the independent variables that we need to look into in further details, to make a better choice for our feature space. In addition, we will add regularization and suitable feature transformations that better reflect differences among hospitals.
+
+\end{document}
